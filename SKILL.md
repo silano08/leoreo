@@ -38,7 +38,7 @@ description: 돈 버는 개발(revenue-driven development) 진단 프레임워�
 - 배포 주기: 아이디어에서 프로덕션까지 며칠 걸리는지, 병목이 리뷰인지 QA인지 배포 자동화인지 의사결정인지 봅니다.
 - 시간 배분: 지난 스프린트에서 매출 관련 작업과 내부용·보고용·유지보수 작업의 비율을 확인합니다.
 - 기술부채: 매출 작업을 늦추거나, 지원비용을 늘리거나, 컴플라이언스 리스크가 되는 항목만 부채로 인정합니다. 스프린트 용량의 15% 정도를 상시 상환에 배정하고, 그 이상 쓰려면 위 기준으로 정당화합니다.
-- B2B라면: 기능이 완성돼도 도입품의·보안심사·전자결재를 통과하지 못하면 매출이 되지 않습니다. ISMS, VPC 옵션, 세금계산서 연동처럼 결재를 통과시키는 기능이 백로그에 핵심 기능만큼 들어있는지 봅니다.
+- B2B라면: 기능이 완성돼도 도입품의·보안심사·전자결재를 통과하지 못하면 매출이 되지 않습니다. ISMS, VPC 옵션, 세금계산서 연동처럼 결재를 통과시키는 기능이 백로그에 핵심 기능만큼 들어있는지 봅니다. 구체적인 목록과 구현 순서는 `leoreo-b2b`가 담당합니다.
 
 ### 2단계 — 투자 판단 게이트: 만들 가치가 있는가
 
@@ -68,6 +68,8 @@ description: 돈 버는 개발(revenue-driven development) 진단 프레임워�
 | 측정 계획 | 출시 후 코호트별 지표 + Sean Ellis 테스트("못 쓰면 매우 실망" ≥40%) |
 ```
 
+이 표의 **측정 계획과 Kill 기준은 실제로 잴 수 있어야 합니다.** 심을 이벤트와 볼 쿼리가 정해지지 않았다면 `leoreo-metrics`로 넘겨 먼저 계측을 설계합니다. 인풋 비용의 인프라 증분과 원가 추정은 `leoreo-cost`가 담당합니다.
+
 수익 예측에 쓰는 공식과 건강 범위는 `references/global-frameworks.md`의 지표 섹션에 있습니다 (LTV:CAC 3:1~5:1, CAC payback 12개월 이내, NRR 100% 이상, Rule of 40, Burn Multiple 1x 미만, SaaS 총마진 75~85%).
 
 ### 4단계 — 롤아웃과 사후 검증
@@ -88,7 +90,20 @@ description: 돈 버는 개발(revenue-driven development) 진단 프레임워�
 - `references/global-frameworks.md` — 서적 11권 실행 규칙(Lean Startup, Mom Test, Zero to One, Rework, $100M Offers, SaaS Playbook, Lean Analytics, Hooked, Traction, Obviously Awesome, Crossing the Chasm), 지표 공식과 벤치마크, YC/Paul Graham/인디해커 지혜, 비용 사고, 검증 사다리 상세
 - `references/korea-playbook.md` — 토스·당근·배민·무신사·쿠팡 사례 교훈, 국내 실패 패턴, 한국 시장 특수성, 검증 채널 상세
 
-수익모델·가격 설계는 `leoreo-model`, 결제 시스템 구현은 `leoreo-pay` 스킬이 담당합니다.
+## 스킬 지도 — 어디로 넘길 것인가
+
+이 스킬은 "만들 가치가 있는가"를 판단합니다. 판단 이후와 이전은 나눠 맡습니다.
+
+| 넘길 곳 | 담당 |
+|---|---|
+| `leoreo-metrics` | 병목을 특정할 데이터를 만드는 일 — 이벤트 설계, 코호트·퍼널 쿼리, 매출 지표, A/B 테스트 설계 |
+| `leoreo-model` | 무엇으로 얼마를 받을지 — 수익모델 선택, 가격·티어·수수료율 설계 |
+| `leoreo-pay` | 실제로 돈을 받는 시스템 — PG 선정, 결제 구현 불변식, 플랜별 권한(엔타이틀먼트), 규제 |
+| `leoreo-retain` | 결제 이후 — 활성화, 이탈 방어, 확장 매출, NRR |
+| `leoreo-cost` | 원칙 1의 비용 쪽 — 원가 가시화, 추론·클라우드 비용 절감, 마진 게이트 |
+| `leoreo-b2b` | 결재를 통과시키는 기능 — SSO·SCIM·감사로그·RBAC, ISMS-P, 보안질의서 |
+
+진단 결과 병목이 어디냐에 따라 갈립니다. 데이터가 없으면 `leoreo-metrics`, 전환은 되는데 마진이 안 남으면 `leoreo-cost`, 사는데 남지 않으면 `leoreo-retain`, 실무자는 좋다는데 도입이 안 되면 `leoreo-b2b`입니다.
 
 ## 출력 규칙
 
